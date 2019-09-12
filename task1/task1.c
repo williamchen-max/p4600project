@@ -43,7 +43,7 @@ int main()
 		sum1+=diffsquare[i];
 	}
 
-	std_dev = sqrt(sum1/n); // calculation of stander deviation
+	std_dev = sqrt(sum1/n-1); // calculation of stander deviation
 	
 
 	/*  ==== END OF YOUR CODE ==== */
