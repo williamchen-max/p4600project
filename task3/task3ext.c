@@ -15,12 +15,21 @@ float stat(float* input, int count)
  		sum += input[i];
  		sq_sum += input[i] * input[i];
  	}
+ 	/*JAMES: What happens if count == 0 ?  Should catch possible errors*/
  	float mean = sum/count;
  	float variance = sq_sum / count-mean * mean;
+ 	/*JAMES: Why are you printing out both twice?*/
  	printf("\nMean = %.3e \n mean = %f",mean,mean);
 	printf("\nStandard deviation = %.3e std_ev = %f", sqrt(variance), sqrt(variance));
 
  	return sqrt(variance);
+
+ 	/*JAMES: You have calculated sqrt(variance) 3 times - this is very inefficient
+ 	if you are reusing a value you should store it in a variable.
+
+ 	A function should really only do one thing. So calculate the mean and variance here, do the printing out values
+ 	back in main. printf only works on computers which have output screens. If you wanted to reuse this function
+ 	for example in an embedded microcontroller you would not be able to use printf */
  }
 
 int main(int argc ,char** argv )
@@ -62,6 +71,9 @@ int main(int argc ,char** argv )
 	}
 	else
 	{
+		/*JAMES: "terminate" is not very helpful to the user - try for example:
+		printf("\nError: Could not open file %s",argv[1]);
+		*/
 		printf("terminate");
 		return 0;
 	}

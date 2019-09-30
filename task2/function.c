@@ -34,6 +34,12 @@ float st_dev( float* input, int count)
 	float mean = sum/count; // divided by total number*/
 	//float mean = find_mean(input,count);
 
+/*JAMES:
+	The for loop below is going to call find_mean every single element in the array. Since it then loops through the
+	array you are going to go through every element count*count times!
+
+	call find_mean once and store the value in a variable in this function before this loop starts.
+*/
 
 	for(i=0; i<count; i++) // the square difference of each data
 	{
@@ -43,6 +49,8 @@ float st_dev( float* input, int count)
 	
 
 	float std_dev = sqrt(sum_diff/(count-1)); // calculation of stander deviation
+
+	/*JAMES: Keep printing separate from the calculation function */
 	printf("\n Standard deviation = %.3e", std_dev);
 	
 
