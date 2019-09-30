@@ -9,54 +9,34 @@
 
 
 float smooth_curve(float * sample, int n,int smooth_factor, float * smooth)
-{
-	//float* x[n]; 
-	//float* m_avrg[n];
-	
-	int a = smooth_factor;
+{	
+	int a = smooth_factor; // to shorten the name smooth_factor to a
 	int c =n-(a-1);
 	int i=0,k=0;
 	float sum;
 
-		FILE * input_file;
-		input_file = fopen("sin_smooth","w");
-	//printf("%d\n", n);
+	FILE * input_file;
+	input_file = fopen("sin_smooth","w"); // write the value in text file
 
 	for (i=0;i<c;i++)
 		{
 			sum=0;
 			for(k=0;k<a;k++)
 			{
-
-				sum += sample[i+k];
-				//printf("%f\n", sum[k]);
+				sum += sample[i+k]; // sum of the all the value in smooth factor
 			}
 
 			smooth[i] =  sum/a;
 	
-			printf("%f\n", smooth[i]);
-			fprintf(input_file,"%f \n",smooth[i]);
-		}
-		/*for (i=0;i<n;i++)
-		{
-			
-
-
-			smooth[i] =  (sample[i]+sample[i+1]+sample[i+2]+sample[i+3]+sample[i+4])/5;
-			
-
-
 			//printf("%f\n", smooth[i]);
-
-
-		fprintf(input_file,"%f \n",smooth[i]);
-		}*/
+			fprintf(input_file,"%f \n",smooth[i]); //print the smoothed value to a text file
+		}
 	
 }
 
-float amplitude(float * input, int m)
+float amplitude(float * input, int m, float Amp) // claculate amplitude use squard root 2 of standard deviation 
 {
-	float sum = 0,mean,variance, Amplitude,std;
+	float sum = 0,mean,variance,std;
  	float sq_sum = 0;
  	int i ;
 
@@ -70,15 +50,19 @@ float amplitude(float * input, int m)
  	variance = sq_sum / m-mean * mean;
  	std = sqrt(variance);
  	float two = pow(2,0.5);
- 	Amplitude = std*two;
+ 	Amp = std*two;
 
  	//printf("\nMean = %.3e \n Standard deviation = %.3e ",mean, std);
- 	printf("the amplitude of the wave is %f",Amplitude);
+ 	//printf("the amplitude of the wave is %f",Amplitude);
 	
 
- 	//return Amplitude;
+ 	return Amp;
 }
 
+float amplitude(float * sample, int m)
+{
+
+}
 
 /*
 
@@ -92,9 +76,9 @@ float amplitude(float * input, int m)
 			for(i=0;i<m;i++)
 			{
 				scanf("%f",samples[i]);
-				if(samples[i]>max)
+				if(samples[i]>peak)
 				{
-					max = samples[i]; 
+					peak = samples[i]; 
 				}
 				if(samples[i]<min)
 				{
@@ -103,10 +87,10 @@ float amplitude(float * input, int m)
 			}
 			
 		}
-		printf("max is %f\n",max);
-		printf("min is %f\n",min);
+		printf("max is %f\n",peak);
+		printf("min is %f\n",trough);
 		
-		float Amplitude = max-min;
+		float Amplitude = (peak-trough)/2;
 		printf("the amplitude of the wave is %f",Amplitude);		
 */
 

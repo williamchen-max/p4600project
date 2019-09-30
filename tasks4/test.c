@@ -38,9 +38,9 @@ int main(int argc ,char** argv )
  		//if(count == 1)return 0;
 		smooth_curve(x,a,10,smooth);
 
-
-		
-		amplitude(smooth,a);
+		float Amplitude;
+		amplitude(smooth,a,Amplitude);
+		printf("the amplitude of the wave is %f",Amplitude);
 
 		
 	}
