@@ -10,3 +10,14 @@ int main(int argc ,char** argv )
 
 	return 0;
 }
+
+void main(int argc ,char** argv )
+{
+	FILE* inputfile;
+
+	if(argc <2)
+	{
+		
+	}
+	inputfile = fopen(argv[1]);
+}

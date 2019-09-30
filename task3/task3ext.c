@@ -9,6 +9,10 @@ float stat(float* input, int count)
  	float sum = 0;
  	float sq_sum = 0;
  	int i ;
+ 	
+ 	if(input == NULL)return 0;
+ 	if(count == 0 )return 0;
+ 	if (count == 1)return *input;
 
  	for(i = 0; i<count; i++ )
  	{
@@ -17,8 +21,8 @@ float stat(float* input, int count)
  	}
  	float mean = sum/count;
  	float variance = sq_sum / count-mean * mean;
- 	printf("\nMean = %.3e \n mean = %f",mean,mean);
-	printf("\nStandard deviation = %.3e std_ev = %f", sqrt(variance), sqrt(variance));
+ 	printf("\nMean = %.3e \n Standard deviation = %.3e ",mean,, sqrt(variance));
+	
 
  	return sqrt(variance);
  }
@@ -62,7 +66,7 @@ int main(int argc ,char** argv )
 	}
 	else
 	{
-		printf("terminate");
+		printf("\nError: Could not open file %s",argv[1]);
 		return 0;
 	}
 

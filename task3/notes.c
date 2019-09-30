@@ -54,6 +54,13 @@ int main()
 
 	input_file = fopen("data.dat","r"); // read only
 
+	if(input_file !=NULL) // CHECK IF IS OPEN
+	{
+		fscanf(input_file,"%f %f",&x,&y);
+
+		fclose(input_file);
+	}
+
 	fscanf(input_file,"%f %f",&x,&y);
 
 	fclose(input_file);
@@ -67,6 +74,7 @@ int main()
 	input_file = fopen("hello.txt","a"); // add to existing file end
 
 	fprintf(input_file,"Hello from x %f and y",x,y);
+
 
 
 }
