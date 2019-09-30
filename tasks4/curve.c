@@ -8,23 +8,49 @@
 
 
 
-float smooth_curve(float * sample, int n, float * smooth)
+float smooth_curve(float * sample, int n,int smooth_factor, float * smooth)
 {
 	//float* x[n]; 
 	//float* m_avrg[n];
-	int c =n-4;
-	int b=0;
+	
+	int a = smooth_factor;
+	int c =n-(a-1);
+	int i=0,k=0;
+	float sum;
 
+		FILE * input_file;
+		input_file = fopen("sin_smooth","w");
 	//printf("%d\n", n);
 
-	for (b=0;b<n;b++)
+	for (i=0;i<c;i++)
 		{
-			smooth[b] =  (sample[b]+sample[b+1]+sample[b+2]+sample[b+3]+sample[b+4])/5;
-			//printf("\n%f %f %f %f %f",x[b],x[b+1],x[b+2],x[b+3],x[b+4]);
-			//m_avrg = sum[b]/5;
+			sum=0;
+			for(k=0;k<a;k++)
+			{
 
-			printf("%f\n", smooth[b]);
+				sum += sample[i+k];
+				//printf("%f\n", sum[k]);
+			}
+
+			smooth[i] =  sum/a;
+	
+			printf("%f\n", smooth[i]);
+			fprintf(input_file,"%f \n",smooth[i]);
 		}
+		/*for (i=0;i<n;i++)
+		{
+			
+
+
+			smooth[i] =  (sample[i]+sample[i+1]+sample[i+2]+sample[i+3]+sample[i+4])/5;
+			
+
+
+			//printf("%f\n", smooth[i]);
+
+
+		fprintf(input_file,"%f \n",smooth[i]);
+		}*/
 	
 }
 
@@ -56,11 +82,11 @@ float amplitude(float * input, int m)
 
 /*
 
-	float max = 0,min = 0;
+	float peak = 0,trough = 0;
 	int i=0;
 
 	printf("at t");
-fflush(stdout);
+    fflush(stdout);
 		while(scanf("%f",samples[i])!=EOF)
 		{
 			for(i=0;i<m;i++)

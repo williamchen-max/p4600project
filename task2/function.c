@@ -31,11 +31,12 @@ float st_dev( float* input, int count,float std_dev )
  
 	float m = find_mean(input,count,average);
 
-
 	for(i=0; i<count; i++) // the square difference of each data
 	{
 		sum_diff += pow((input[i]-m),2);
 	}
+
+	float std_dev = sqrt(sum_diff/(count-1)); // calculation of stander deviation
 
 	std_dev = sqrt(sum_diff/(count-1)); // calculation of stander deviation
 	return std_dev;

@@ -34,9 +34,11 @@ int main(int argc ,char** argv )
 			fscanf(input_file,FORMATE,&x[i]);
 			//printf("\n%f",x[i]);
 		}
-		if(count == 0)return 0;
- 		if(count == 1)return 0;
-		smooth_curve(x,a,smooth);
+		//if(count == 0)return 0;
+ 		//if(count == 1)return 0;
+		smooth_curve(x,a,10,smooth);
+
+
 		
 		amplitude(smooth,a);
 
@@ -47,8 +49,4 @@ int main(int argc ,char** argv )
 		printf("\nError: Could not open file %s",argv[1]);
 		return 0;
 	}
-	
-
-	
-
 }

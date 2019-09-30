@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-float smooth_curve(float * sample, int n, float * smooth);
+float smooth_curve(float * sample, int n,int smooth_factor, float * smooth);
 
 float amplitude(float * input, int m);
 
