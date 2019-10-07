@@ -15,7 +15,7 @@ void main(int argc, char** argv)
 	ViChar description[VI_FIND_BUFLEN];
 	char dataBuffer[2500];
 
-	int y;
+	
 
 	int lsb;
 	int msb;
@@ -45,10 +45,13 @@ void main(int argc, char** argv)
 				viWrite(scopeHandle,"CURVe?\n",7,&resultCount);
 				viRead(scopeHandle,dataBuffer,2500,&resultCount);
 
-				for(int i = 0; i<250; i++)
+				float y[2500];
+
+				for(int i = 0; i<2500; i++)
 				{
-					y = dataBuffer[i];
-					printf("\nRaw = %x,  Read = %d",y,y);
+					y[i] = dataBuffer[i];
+					//printf("\nRaw = %x,  Read = %d",y,y);
+					printf("\nRaw = %f",y[i]);
 				}
 				
 
