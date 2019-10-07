@@ -40,10 +40,13 @@ void main(int argc, char** argv)
 				viRead(scopeHandle,resultBuffer,256,&resultCount);
 
 				printf("\nResult count = %d",resultCount);
-				printf("\nResult buffer = %s\n",resultBuffer );
-
-				viWrite(scopeHandle,"CURVe?\n",7,&resultCount);
-				viRead(scopeHandle,dataBuffer,2500,&resultCount);
+				printf("\nResult buffer = %s\n",resultBuffer ); 
+				//
+				viWrite(scopeHandle,"DAT:SOU CH1\n",12,&resultCount);
+				viWrite(scopeHandle,"CURV?\n",7,&resultCount);
+				sleep(2);
+				status = viRead(scopeHandle,dataBuffer,2500,&resultCount);
+				
 
 				float y[2500];
 
