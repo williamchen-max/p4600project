@@ -22,7 +22,6 @@ void main(int argc, char** argv)
 		if(status == VI_SUCCESS)
 		{
 			status = viOpen(defaultRM,description,
-							VI_NULL,VI_NULL,&scopeHandle);
 
 			if(status == VI_SUCCESS)
 			{

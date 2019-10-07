@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>	
 #include <visa.h>
+#include "curve.h"
 
 void main(int argc, char** argv)
 {
@@ -16,6 +17,7 @@ void main(int argc, char** argv)
 	char dataBuffer[2500];
 
 	
+	int y[2500];
 
 	int lsb;
 	int msb;
@@ -41,22 +43,23 @@ void main(int argc, char** argv)
 
 				printf("\nResult count = %d",resultCount);
 				printf("\nResult buffer = %s\n",resultBuffer ); 
-				//
-				viWrite(scopeHandle,"DAT:SOU CH1\n",12,&resultCount);
-				viWrite(scopeHandle,"CURV?\n",7,&resultCount);
+				
+				//viWrite(scopeHandle,"DAT:SOU CH1\n",12,&resultCount);
+				viWrite(scopeHandle,"CURV?\n",6,&resultCount);
 				sleep(2);
 				status = viRead(scopeHandle,dataBuffer,2500,&resultCount);
 				
-
-				float y[2500];
 
 				for(int i = 0; i<2500; i++)
 				{
 					y[i] = dataBuffer[i];
 					//printf("\nRaw = %x,  Read = %d",y,y);
-					printf("\nRaw = %f",y[i]);
+					printf("\n %d",y[i]);
 				}
-				
+
+				int Amplitude;
+				amplitude(y,2500,Amplitude);
+				printf("the amplitude of the wave is %d",Amplitude);
 
 			}
 			else
