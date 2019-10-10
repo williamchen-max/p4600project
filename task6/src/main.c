@@ -27,6 +27,11 @@ void main(int argc, char** argv)
 	int lsb;
 	int msb;
 
+	float data[2500];
+	float new_data[2500];
+	float min,peak;
+	float volt;
+
 	status = viOpenDefaultRM(&defaultRM);
 
 	if(status == VI_SUCCESS)
@@ -49,23 +54,43 @@ void main(int argc, char** argv)
 				printf("\nResult count = %d",resultCount);
 				printf("\nResult buffer = %s\n",resultBuffer ); 
 				
-				viWrite(scopeHandle,"DAT:SOU CH1\n",12,&ResultCount);
-				viWrite(scopeHandle,"DAT:SOU? \n",9,&CH);
-				viRead(scopeHandle,ch,3,&CH);
-				printf("usded: %s\n",ch);
-
-				viWrite(scopeHandle,"CH1:SCAle? \n",11,&Voltage);
-				viRead(scopeHandle,voltage,3,&Voltage);
-				printf("voltage = %s\n",voltage);
-
-				viWrite(scopeHandle,"CURV?\n",6,&resultCount);
-				sleep(2);
-				status = viRead(scopeHandle,dataBuffer,2500,&resultCount);
 				
-				float data[2500];
-				float new_data[2500];
-				float min,peak;
-				float volt = voltage[1];
+
+					if(status == VI_SUCCESS)
+						{
+							viWrite(scopeHandle,"DAT:SOU CH1\n",12,&ResultCount);
+							viWrite(scopeHandle,"DAT:SOU? \n",9,&CH);
+							status = viRead(scopeHandle,ch,3,&CH);
+							printf("usded: %s\n",ch);
+						}
+					else
+					{
+						printf("\n Ch set to %s ", ch);
+					}
+
+					if(status == VI_SUCCESS)
+						{
+							viWrite(scopeHandle,"CH1:SCAle? \n",11,&Voltage);
+							status = viRead(scopeHandle,voltage,3,&Voltage);
+							printf("voltage = %s\n",voltage);
+						}
+					else
+					{
+						printf("\n voltage not read ");
+					}
+
+					if(status == VI_SUCCESS)
+						{
+							viWrite(scopeHandle,"CURV?\n",6,&resultCount);
+							sleep(2);
+							status = viRead(scopeHandle,dataBuffer,2500,&resultCount);
+						}
+					else
+					{
+						printf("\n voltage not read ");
+					}
+
+				sscanf(voltage,"%f",volt);
 
 				float bits = volt/256;
 				fflush(stdout);
