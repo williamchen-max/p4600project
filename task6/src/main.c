@@ -54,61 +54,57 @@ void main(int argc, char** argv)
 				printf("\nResult count = %d",resultCount);
 				printf("\nResult buffer = %s\n",resultBuffer ); 
 				
+				viWrite(scopeHandle,"DAT:SOU CH1\n",12,&ResultCount);
+				viWrite(scopeHandle,"DAT:SOU? \n",9,&CH);
+				status = viRead(scopeHandle,ch,52,&CH);
 				
-
 					if(status == VI_SUCCESS)
 						{
-							viWrite(scopeHandle,"DAT:SOU CH1\n",12,&ResultCount);
-							viWrite(scopeHandle,"DAT:SOU? \n",9,&CH);
-							status = viRead(scopeHandle,ch,3,&CH);
 							printf("usded: %s\n",ch);
 						}
 					else
 					{
-						printf("\n Ch set to %s ", ch);
+						printf("\n Failed. Ch set to %s ", ch);
 					}
+
+					viWrite(scopeHandle,"CH1:SCAle?\n",11,&Voltage);
+					status = viRead(scopeHandle,voltage,34,&Voltage);
 
 					if(status == VI_SUCCESS)
 						{
-							viWrite(scopeHandle,"CH1:SCAle? \n",11,&Voltage);
-							status = viRead(scopeHandle,voltage,3,&Voltage);
 							printf("voltage = %s\n",voltage);
 						}
 					else
 					{
-						printf("\n voltage not read ");
+						printf("voltage not read \n");
 					}
 
-					if(status == VI_SUCCESS)
-						{
-							viWrite(scopeHandle,"CURV?\n",6,&resultCount);
-							sleep(2);
-							status = viRead(scopeHandle,dataBuffer,2500,&resultCount);
-						}
-					else
-					{
-						printf("\n voltage not read ");
-					}
-
-				sscanf(voltage,"%f",volt);
-
-				float bits = volt/256;
-				fflush(stdout);
-
-				for(int i = 0; i<2500; i++)
-				{
-					y[i] = dataBuffer[i];
-					data[i] = y[i]*bits;					
+					viWrite(scopeHandle,"CURV?\n",6,&resultCount);
+					sleep(2);
+					viRead(scopeHandle,dataBuffer,2500,&resultCount);
 					
-					//printf("\nRaw = %x,  Read = %d",y,y);
-					//printf("\n %f",y[i]);
-				}
+					sscanf(voltage,"%f",&volt);
 
-				printf("data complete");fflush(stdout);
+					float bits = volt/256;
+					fflush(stdout);
+
+					
+						
+							for(int i = 0; i<2500; i++)
+							{
+								y[i] = dataBuffer[i];
+								data[i] = y[i]*bits;					
+					
+								//printf("\nRaw = %x,  Read = %d",y,y);
+								//printf("\n %f",y[i]);
+							}
+							printf("data complete");fflush(stdout);
+						
+					
 
 				for(int i = 0; i<2500; i++)
 				{
-					scanf("%f",data[i]);
+					//scanf("%f",data[i]);
 					if(data[i]>peak)
 					{
 						peak = data[i]; 
