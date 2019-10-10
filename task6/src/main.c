@@ -11,9 +11,14 @@ void main(int argc, char** argv)
 	ViFindList resourceList;
 	ViUInt32 num_inst;
 	ViUInt32 resultCount;
+	ViUInt32 ResultCount;
+	ViUInt32 CH;
+	ViUInt32 Voltage;
 
 	ViSession defaultRM, scopeHandle;
 	ViChar description[VI_FIND_BUFLEN];
+	ViChar ch[5];
+	ViChar voltage[34];
 	char dataBuffer[2500];
 
 	
@@ -44,23 +49,63 @@ void main(int argc, char** argv)
 				printf("\nResult count = %d",resultCount);
 				printf("\nResult buffer = %s\n",resultBuffer ); 
 				
-				//viWrite(scopeHandle,"DAT:SOU CH1\n",12,&resultCount);
+				viWrite(scopeHandle,"DAT:SOU CH1\n",12,&ResultCount);
+				viWrite(scopeHandle,"DAT:SOU? \n",9,&CH);
+				viRead(scopeHandle,ch,3,&CH);
+				printf("usded: %s\n",ch);
+
+				viWrite(scopeHandle,"CH1:SCAle? \n",11,&Voltage);
+				viRead(scopeHandle,voltage,3,&Voltage);
+				printf("voltage = %s\n",voltage);
+
 				viWrite(scopeHandle,"CURV?\n",6,&resultCount);
 				sleep(2);
 				status = viRead(scopeHandle,dataBuffer,2500,&resultCount);
 				
+				float data[2500];
+				float new_data[2500];
+				float min,peak;
+				float volt = voltage[1];
+
+				float bits = volt/256;
+				fflush(stdout);
 
 				for(int i = 0; i<2500; i++)
 				{
 					y[i] = dataBuffer[i];
+					data[i] = y[i]*bits;					
+					
 					//printf("\nRaw = %x,  Read = %d",y,y);
-					printf("\n %d",y[i]);
+					//printf("\n %f",y[i]);
 				}
 
-				int Amplitude;
-				amplitude(y,2500,Amplitude);
-				printf("the amplitude of the wave is %d",Amplitude);
+				printf("data complete");fflush(stdout);
 
+				for(int i = 0; i<2500; i++)
+				{
+					scanf("%f",data[i]);
+					if(data[i]>peak)
+					{
+						peak = data[i]; 
+					}
+					if(data[i]<min)
+					{
+						min = data[i]; 
+					}
+				}
+
+				float Amp = (peak-min)/2;
+
+				printf("\n peak = %f \n min = %f",peak,min);
+				printf("\n amplitude = %f",Amp);
+/*
+				float* curve[2500];
+				smooth_curve(data,2500,5,curve);
+
+				float Amplitude;
+				amplitude(curve,2500,Amplitude);
+				printf("the amplitude of the wave is %f",Amplitude);
+*/
 			}
 			else
 			{

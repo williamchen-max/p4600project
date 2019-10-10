@@ -48,7 +48,7 @@ float smooth_curve(float * sample, int n,int smooth_factor, float * smooth)
 	
 }
 
-float amplitude(int * input, int m, int Amp) // claculate amplitude use squard root 2 of standard deviation 
+float amplitude(float * input, int m, float Amp) // claculate amplitude use squard root 2 of standard deviation 
 {
 	float sum = 0,mean,variance,std;
  	float sq_sum = 0;
