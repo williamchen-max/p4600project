@@ -3,12 +3,14 @@
 
 #include <stdio.h>
 
-float smooth_curve(float * sample, int n,int smooth_factor, float * smooth);
+float smooth_curve(float * sample, int datapoint,int smooth_factor, float * smooth);
 
-float amplitude(float * input, int m,float Amp);
+float amp_stat(float * input, int m, float Amp);
 
 int get_data(FILE* datafile, float* data, int sz_data);
 
 int waves();
+
+float amp(float * data, float m);
 
 #endif

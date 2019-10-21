@@ -22,10 +22,10 @@ int get_data(FILE* datafile, float* data, int sz_data)
 	return i;
 }
 
-float smooth_curve(float * sample, int datapoint,int smooth_factor, float * smooth)
+float smooth_curve(float * sample, int n,int smooth_factor, float * smooth)
 {	
 	int a = smooth_factor; // to shorten the name smooth_factor to a
-	int c =datapoint-(a-1);
+	int c =n-(a-1);
 	int i=0,k=0;
 	float sum;
 
@@ -48,7 +48,7 @@ float smooth_curve(float * sample, int datapoint,int smooth_factor, float * smoo
 	
 }
 
-float amp_stat(float * input, int m, float Amp) // claculate amplitude use squard root 2 of standard deviation 
+float amplitude(float * input, int m, float Amp) // claculate amplitude use squard root 2 of standard deviation 
 {
 	float sum = 0,mean,variance,std;
  	float sq_sum = 0;
@@ -73,26 +73,9 @@ float amp_stat(float * input, int m, float Amp) // claculate amplitude use squar
  	return Amp;
 }
 
-float amp(float * data, float m)
+float amplitudes(float * sample, int m)
 {
-	int i;
-	float min,peak;
 
-	for(int i = 0; i<2500; i++)
-	{
-		scanf("%f",data[i]);
-		if(data[i]>peak)
-		{
-			peak = data[i]; 
-		}
-		if(data[i]<min)
-		{
-			min = data[i]; 
-		}
-	}
-	m = (peak-min)/2;
-
-	return m;
 }
 
 /*
