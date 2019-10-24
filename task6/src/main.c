@@ -3,143 +3,82 @@
 #include <math.h>	
 #include <visa.h>
 #include "curve.h"
+#include "LCR_Meter.h"
 
 void main(int argc, char** argv)
 {
-	unsigned char resultBuffer[256];
+	/*
+	float amplitude;
+	float frequency = 1;
+	float frequency_max = 1000;
+	int step = 100;
+	int i;
+	int point = (frequency-frequency_max)/step;
+	float amplitude_array[point];
+
+	FILE * input_file;
+	input_file = fopen("Amplitude","w");
+
+	for(i=0;i<point;i++)
+	{
+		data_aquire(frequency,frequency_max,step,amplitude);
+		amplitude_array[i] = amplitude;
+
+		printf("amplitude = %f",amplitude[i]);
+		fprintf(input_file,"%f \n",amplitude[i]);
+	}
+*/
 	ViStatus status = VI_SUCCESS;
-	ViFindList resourceList;
-	ViUInt32 num_inst;
-	ViUInt32 resultCount;
-	ViUInt32 ResultCount;
-	ViUInt32 CH;
-	ViUInt32 Voltage;
-
-	ViSession defaultRM, scopeHandle;
-	ViChar description[VI_FIND_BUFLEN];
-	ViChar ch[5];
-	ViChar voltage[34];
-	char dataBuffer[2500];
-
+	ViChar description_SCOPE[VI_FIND_BUFLEN];
+	ViChar description_FG[VI_FIND_BUFLEN];
+	ViSession defaultRM, scopeHandle, FGHandle;
 	
-	int y[2500];
+	char databuffer[2500];
 
-	int lsb;
-	int msb;
+	int y[2500];
+	int i;
+	int error;
+	int point = (fmax-f)/step;
 
 	float data[2500];
-	float new_data[2500];
-	float min,peak;
 	float volt;
+	float amplitude_array[step];
 
 	status = viOpenDefaultRM(&defaultRM);
 
 	if(status == VI_SUCCESS)
 	{
-		status = viFindRsrc(defaultRM,"USB[0-9]::?*INSTR",	&resourceList,&num_inst,description);
+		scope_open(description_SCOPE); printf("\nOpened %s\n",description_SCOPE);
+
 		if(status == VI_SUCCESS)
 		{
-			status = viOpen(defaultRM,description,	VI_NULL,VI_NULL,&scopeHandle);
+			fg_open(description_FG); printf("\nOpened %s\n",description_FG);
 
 			if(status == VI_SUCCESS)
 			{
-				printf("\nOpened %s\n",description);
 
-				/*viWrite(scopeHandle,"CH1:VOLts 1",16,&resultCount);
-				viRead(scopeHandle,resultBuffer,256,&resultCount);*/
-
-				viWrite(scopeHandle,"*IDN?\n",6,&resultCount);      
-				viRead(scopeHandle,resultBuffer,256,&resultCount);
-
-				printf("\nResult count = %d",resultCount);
-				printf("\nResult buffer = %s\n",resultBuffer ); 
-				
-				viWrite(scopeHandle,"DAT:SOU CH1\n",12,&ResultCount);
-				viWrite(scopeHandle,"DAT:SOU? \n",9,&CH);
-				status = viRead(scopeHandle,ch,52,&CH);
-				
-					if(status == VI_SUCCESS)
-						{
-							printf("usded: %s\n",ch);
-						}
-					else
-					{
-						printf("\n Failed. Ch set to %s ", ch);
-					}
-
-					viWrite(scopeHandle,"CH1:SCAle?\n",11,&Voltage);
-					status = viRead(scopeHandle,voltage,34,&Voltage);
-
-					if(status == VI_SUCCESS)
-						{
-							printf("voltage = %s\n",voltage);
-						}
-					else
-					{
-						printf("voltage not read \n");
-					}
-
-					viWrite(scopeHandle,"CURV?\n",6,&resultCount);
-					sleep(2);
-					viRead(scopeHandle,dataBuffer,2500,&resultCount);
-					
-					sscanf(voltage,"%f",&volt);
-
-					float bits = volt/256;
-					fflush(stdout);
-
-					
-						
-							for(int i = 0; i<2500; i++)
-							{
-								y[i] = dataBuffer[i];
-								data[i] = y[i]*bits;					
-					
-								//printf("\nRaw = %x,  Read = %d",y,y);
-								//printf("\n %f",y[i]);
-							}
-							printf("data complete");fflush(stdout);
-						
-					
-
-				for(int i = 0; i<2500; i++)
-				{
-					//scanf("%f",data[i]);
-					if(data[i]>peak)
-					{
-						peak = data[i]; 
-					}
-					if(data[i]<min)
-					{
-						min = data[i]; 
-					}
-				}
-
-				float Amp = (peak-min)/2;
-
-				printf("\n peak = %f \n min = %f",peak,min);
-				printf("\n amplitude = %f",Amp);
-/*
-				float* curve[2500];
-				smooth_curve(data,2500,5,curve);
-
-				float Amplitude;
-				amplitude(curve,2500,Amplitude);
-				printf("the amplitude of the wave is %f",Amplitude);
-*/
 			}
 			else
 			{
-				printf("\nFailed to open %s",description);
+				printf("\nFG not open");
+				error = 2;
+				Error_Handling(error);
 			}
 		}
 		else
 		{
-			printf("\nCouldn't find any instruments");
+			printf("\nScope not open");
+			error = 1;
+			Error_Handling(error);
 		}
-	}
+	}	
 	else
 	{
 		printf("\nFailed to open defaultRM");
-	}
+		error = 0;
+		Error_Handling(error);
+	}	
+	return ;
+}
+	
 }
