@@ -4,7 +4,7 @@
 #include <visa.h>
 #include "curve.h"
 #include <string.h>
-
+/*
 
 int voltage_set (ViSession Handle,float volts);
 int get_curve(ViSession Handle,char* databuffer,int npoint);
@@ -167,3 +167,4 @@ int Data_Aquire(float f, float fmax, int step, float amplitude)
 	}
 	}
 }
+*/

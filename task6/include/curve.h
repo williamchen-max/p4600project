@@ -11,6 +11,6 @@ int get_data(FILE* datafile, float* data, int sz_data);
 
 int waves();
 
-float amp(float * data, float m);
+float amp(float * data);
 
 #endif

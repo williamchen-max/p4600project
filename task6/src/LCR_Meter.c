@@ -13,10 +13,26 @@ int get_curve(ViSession Handle,char* databuffer,int npoint)
 	unsigned char resultbuffer[256];
 	viWrite(Handle,"CURV?\n",6,&resultCount);   
 	sleep(2);   
-	viRead(Handle,resultbuffer,npoint,&resultCount);
+	viRead(Handle,databuffer,npoint,&resultCount);
 	return status;
 }
 
+int voltage_read (ViSession Handle,float* volt)
+{
+	ViUInt32 Voltage;ViStatus status;
+	ViChar voltage[34];
+
+	viWrite(Handle,"AUTOSet EXECute\n",16,&Voltage);
+	viWrite(Handle,"CH1:SCAle?\n",11,&Voltage);
+	status = viRead(Handle,voltage,34,&Voltage);
+	if(status == VI_SUCCESS)
+	{
+		//printf("voltage = %s\n",voltage);
+		sscanf(voltage,"%f",volt);
+		printf("voltage = %f\n",*volt);
+	}
+	return status;
+}
 int voltage_set (ViSession Handle,float volts)
 {
 	ViUInt32 resultCount;
@@ -26,10 +42,9 @@ int voltage_set (ViSession Handle,float volts)
 	return status;
 }
 
-int scope_open(ViChar description_SCOPE[VI_FIND_BUFLEN])
+int scope_open(ViSession defaultRM,ViSession* scopeHandle,ViChar description_SCOPE[VI_FIND_BUFLEN])
 {
 	ViStatus status = VI_SUCCESS;	
-	ViSession defaultRM, scopeHandle;
 	ViFindList resourceList;
 	ViUInt32 num_inst, resultCount;
 	
@@ -38,23 +53,22 @@ int scope_open(ViChar description_SCOPE[VI_FIND_BUFLEN])
 	status = viFindRsrc(defaultRM,"USB[0-9]::0X0699::?*INSTR", &resourceList,&num_inst,description_SCOPE);
 	if(status == VI_SUCCESS)
 	 {
-	 	viOpen(defaultRM,description_SCOPE,VI_NULL,VI_NULL,&scopeHandle);
+	 	viOpen(defaultRM,description_SCOPE,VI_NULL,VI_NULL,scopeHandle);
 	 	if(status == VI_SUCCESS)
 	 	{
-	 		viWrite(scopeHandle,"*IDN?\n",6,&resultCount);      
-			viRead(scopeHandle,resultBuffer,256,&resultCount);
+	 		viWrite(*scopeHandle,"*IDN?\n",6,&resultCount);      
+			viRead(*scopeHandle,resultBuffer,256,&resultCount);
 			
-			printf("\nResult count = %d",resultCount);
-			printf("\nResult buffer = %s\n",resultBuffer ); 
+			//printf("\nResult count = %d",resultCount);
+			//printf("\nResult buffer = %s\n",resultBuffer ); 
 	 	}
 	 }
 	 return status;
 }
 
-int fg_open(ViChar description_FG[VI_FIND_BUFLEN])
+int fg_open(ViSession defaultRM,ViSession* FGHandle,ViChar description_FG[VI_FIND_BUFLEN])
 {
 	ViStatus status = VI_SUCCESS;	
-	ViSession defaultRM, FGHandle;
 	ViFindList resourceList;
 	ViUInt32 num_inst,resultCount_FG;
 
@@ -63,25 +77,26 @@ int fg_open(ViChar description_FG[VI_FIND_BUFLEN])
 	status = viFindRsrc(defaultRM,"USB[0-9]::0X1AB1::?*INSTR", &resourceList,&num_inst,description_FG); // find RIGOL FG
 	if(status == VI_SUCCESS)
 	 {
-	 	viOpen(defaultRM,description_FG,VI_NULL,VI_NULL,&FGHandle);
+	 	viOpen(defaultRM,description_FG,VI_NULL,VI_NULL,FGHandle);
 	 	if(status == VI_SUCCESS)
 	 	{
-	 		viWrite(FGHandle,"*IDN?\n",6,&resultCount_FG);      
-			viRead(FGHandle,resultBuffer_FG,256,&resultCount_FG);
+	 		viWrite(*FGHandle,"*IDN?\n",6,&resultCount_FG);      
+			viRead(*FGHandle,resultBuffer_FG,256,&resultCount_FG);
 
-			printf("\nResult count = %d",resultCount_FG);
-			printf("\nResult buffer = %s\n",resultBuffer_FG ); 
+			//printf("\nResult count = %d",resultCount_FG);
+			//printf("\nResult buffer = %s\n",resultBuffer_FG ); 
 	 	}
 	 }
 	 return status;
 }
 
-int fg_set(float frequency,ViSession Handle)
+int fg_set(ViSession Handle,int frequency,int vol,int dc, int phase)
 {
 	ViUInt32 resultCount;
-	char command[36]; 
-	sprintf(command,":SOUR1:APPL:SIN,%E,1\n",frequency);
+	char command[45]; 
+	sprintf(command,":SOUR1:APPL:SIN %d,%d,%d,%d\n",frequency,vol,dc,phase);
 	viWrite(Handle,command,strlen(command),&resultCount);
+	viWrite(Handle,":OUTP1 ON\n",10,&resultCount); 
 	return VI_SUCCESS;
 }
 
@@ -223,9 +238,25 @@ int Error_Handling(int error)
 
 int data_aquire(float f, float fmax, int step, float amplitude)
 {
+	ViStatus status = VI_SUCCESS;
+	ViChar description_SCOPE[VI_FIND_BUFLEN];
+	ViChar description_FG[VI_FIND_BUFLEN];
+	ViSession defaultRM, scopeHandle, FGHandle;
+	
+	char databuffer[2500];
+
+	int y[2500];
+	int i;
+	int error;
+	int point = (fmax-f)/step;
+
+	float data[2500];
+	float volt;
+	float amplitude_array[step];
+
 	for(i=f;i<fmax;i+step)
 	{
-		fg_set(i,FGHandle);
+		fg_set(FGHandle,i,1,0,0);
 
 		if(status == VI_SUCCESS)
 		{

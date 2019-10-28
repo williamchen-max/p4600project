@@ -73,10 +73,10 @@ float amp_stat(float * input, int m, float Amp) // claculate amplitude use squar
  	return Amp;
 }
 
-float amp(float * data, float m)
+float amp(float * data)
 {
 	int i;
-	float min,peak;
+	float min,peak;float m;
 
 	for(int i = 0; i<2500; i++)
 	{
