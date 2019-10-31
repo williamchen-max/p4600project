@@ -29,8 +29,8 @@ float smooth_curve(float * sample, int datapoint,int smooth_factor, float * smoo
 	int i=0,k=0;
 	float sum;
 
-	FILE * input_file;
-	input_file = fopen("sin_smooth","w"); // write the value in text file
+	//FILE * input_file;
+	//input_file = fopen("sin_smooth","w"); // write the value in text file
 
 	for (i=0;i<c;i++)
 		{
@@ -43,16 +43,17 @@ float smooth_curve(float * sample, int datapoint,int smooth_factor, float * smoo
 			smooth[i] =  sum/a;
 	
 			//printf("%f\n", smooth[i]);
-			fprintf(input_file,"%f \n",smooth[i]); //print the smoothed value to a text file
+			//fprintf(input_file,"%f \n",smooth[i]); //print the smoothed value to a text file
 		}
 	
 }
 
-float amp_stat(float * input, int m, float Amp) // claculate amplitude use squard root 2 of standard deviation 
+float amp_stat(float * input, int m ) // claculate amplitude use squard root 2 of standard deviation 
 {
 	float sum = 0,mean,variance,std;
  	float sq_sum = 0;
  	int i ;
+ 	float Amp;
 
  	for(i = 0; i<m; i++ )
  	{
@@ -67,7 +68,7 @@ float amp_stat(float * input, int m, float Amp) // claculate amplitude use squar
  	Amp = std*two;
 
  	//printf("\nMean = %.3e \n Standard deviation = %.3e ",mean, std);
- 	//printf("the amplitude of the wave is %f",Amplitude);
+ 	//printf("the amplitude of the wave is %f",Amp);
 	
 
  	return Amp;
@@ -76,7 +77,8 @@ float amp_stat(float * input, int m, float Amp) // claculate amplitude use squar
 float amp(float * data)
 {
 	int i;
-	float min,peak;float m;
+	float min,peak;
+	float m;
 
 	for(int i = 0; i<2500; i++)
 	{
@@ -85,11 +87,16 @@ float amp(float * data)
 		{
 			peak = data[i]; 
 		}
+	}
+	for(int i = 0; i<2500; i++)
+	{
+		scanf("%f",data[i]);
 		if(data[i]<min)
 		{
 			min = data[i]; 
 		}
 	}
+	
 	m = (peak-min)/2;
 
 	return m;

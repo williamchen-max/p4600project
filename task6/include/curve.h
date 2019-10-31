@@ -5,7 +5,7 @@
 
 float smooth_curve(float * sample, int datapoint,int smooth_factor, float * smooth);
 
-float amp_stat(float * input, int m, float Amp);
+float amp_stat(float * input, int m);
 
 int get_data(FILE* datafile, float* data, int sz_data);
 

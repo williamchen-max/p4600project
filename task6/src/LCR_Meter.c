@@ -17,28 +17,28 @@ int get_curve(ViSession Handle,char* databuffer,int npoint)
 	return status;
 }
 
-int voltage_read (ViSession Handle,float* volt)
+int voltage_read (ViSession* Handle,float* volt)
 {
 	ViUInt32 Voltage;ViStatus status;
 	ViChar voltage[34];
 
-	viWrite(Handle,"AUTOSet EXECute\n",16,&Voltage);
-	viWrite(Handle,"CH1:SCAle?\n",11,&Voltage);
-	status = viRead(Handle,voltage,34,&Voltage);
-	if(status == VI_SUCCESS)
-	{
+	viWrite(*Handle,"AUTOSet EXECute\n",16,&Voltage);
+	sleep(5);
+	viWrite(*Handle,"CH1:SCAle?\n",11,&Voltage);
+	viRead(*Handle,voltage,256,&Voltage); 
+
 		//printf("voltage = %s\n",voltage);
-		sscanf(voltage,"%f",volt);
-		printf("voltage = %f\n",*volt);
-	}
+		sscanf(voltage,"%f",&volt);
+		//printf("voltage float = %f\n",*volt);
+	
 	return status;
 }
-int voltage_set (ViSession Handle,float volts)
+int voltage_set (ViSession* Handle,float volts)
 {
 	ViUInt32 resultCount;
 	char command[36];
 	sprintf(command,"CH1:SCALe %E \n",volts);
-	ViStatus status = viWrite(Handle,command,strlen(command),&resultCount);      
+	ViStatus status = viWrite(*Handle,command,strlen(command),&resultCount);      
 	return status;
 }
 
@@ -90,17 +90,17 @@ int fg_open(ViSession defaultRM,ViSession* FGHandle,ViChar description_FG[VI_FIN
 	 return status;
 }
 
-int fg_set(ViSession Handle,int frequency,int vol,int dc, int phase)
+int fg_set(ViSession* Handle,int frequency,int vol,int dc, int phase)
 {
 	ViUInt32 resultCount;
 	char command[45]; 
 	sprintf(command,":SOUR1:APPL:SIN %d,%d,%d,%d\n",frequency,vol,dc,phase);
-	viWrite(Handle,command,strlen(command),&resultCount);
-	viWrite(Handle,":OUTP1 ON\n",10,&resultCount); 
+	viWrite(*Handle,command,strlen(command),&resultCount);
+	viWrite(*Handle,":OUTP1 ON\n",10,&resultCount); 
 	return VI_SUCCESS;
 }
 
-int scope_set(int chanel,ViSession Handle)
+int scope_set(int chanel,ViSession* Handle)
 {
 	ViStatus status = VI_SUCCESS;
 	ViUInt32 resultCount,CH;
@@ -108,9 +108,9 @@ int scope_set(int chanel,ViSession Handle)
 	char command[36]; 
 	sprintf(command,"DAT:SOU CH%d\n",chanel);
 	
-	viWrite(Handle,command,strlen(command),&resultCount);
-	viWrite(Handle,"DAT:SOU? \n",9,&CH); // set up which ch the scope is reading
-	status = viRead(Handle,ch,52,&CH); // read which ch is is recording
+	viWrite(*Handle,command,strlen(command),&resultCount);
+	viWrite(*Handle,"DAT:SOU? \n",9,&CH); // set up which ch the scope is reading
+	status = viRead(*Handle,ch,52,&CH); // read which ch is is recording
 	return status;
 }
 
@@ -138,165 +138,130 @@ int Error_Handling(int error)
 	}
 }
 
-/*int data_aquire(float f, float fmax, int step, float amplitude)
+float data_aquire(ViSession* scopeHandle,int scopech)
 {
 	ViStatus status = VI_SUCCESS;
 	ViChar description_SCOPE[VI_FIND_BUFLEN];
 	ViChar description_FG[VI_FIND_BUFLEN];
-	ViSession defaultRM, scopeHandle, FGHandle;
+	ViSession defaultRM;
+
 	
 	char databuffer[2500];
 
 	int y[2500];
-	int i;
+	int i=0;
 	int error;
-	int point = (fmax-f)/step;
+	int fmax;
+	int f ;
+	int step;
+	int n = 0 ,a=0;
 
 	float data[2500];
-	float volt;
-	float amplitude_array[step];
+	float scale;
 
-	status = viOpenDefaultRM(&defaultRM);
+	//fg_set(FGHandle,i,1,0,0);//printf("\nFG is initialize\n");fflush(stdout);
 
-	if(status == VI_SUCCESS)
-	{
-		scope_open(description_SCOPE); printf("\nOpened %s\n",description_SCOPE);
-
-		if(status == VI_SUCCESS)
-		{
-			fg_open(description_FG); printf("\nOpened %s\n",description_FG);
-
-			if(status == VI_SUCCESS)
+	//printf("\nfrequency = %d \n",i);
+		scope_set(scopech,*scopeHandle); // set up the scope to the right ch
+		//printf("\nscope is initialize\n");fflush(stdout);
+		
+		voltage_read(*scopeHandle,&scale);
+		float bits = scale*10.0/256.0; // calculate the volt per bit of the scale
+		//printf("volt / bits = %f \n",bits);fflush(stdout);
+		//printf("scale = %f \n",scale);fflush(stdout);
+							
+			get_curve(*scopeHandle,databuffer,2500);
+			//printf("\ncurve copy\n");fflush(stdout);
+							
+			for(int a = 0; a<2500; a++) // obtain the datapoint and convert to floating point
 			{
-				for(i=f;i<fmax;i+step)
+				y[a] = databuffer[a];
+				data[a] = y[a]*bits;
+				//printf("%f\n",data[a]);fflush(stdout);
+			}
+			//printf("data complete \n");fflush(stdout);
+				
+				float smooth[2500];
+				smooth_curve(data,2500,5,smooth); // smooth out the curve
+				//printf("\ncurve smooth\n");fflush(stdout);
+					
+					float amplitude = amp_stat(smooth,2496);
+					//printf("%f\n",amplitude_array[n] );fflush(stdout);
+					//fprintf(input_file,"%d %f \n",i,amplitude_array[n]);
+					//n=n+1;
+
+						
+return amplitude;
+
+}
+
+void unserinput()
+{
+	/*
+	if(argc > 1)
 				{
-					fg_set(i,FGHandle);
-
-					if(status == VI_SUCCESS)
+					for(a=0;a<8;a++)
 					{
-						scope_set(1,scopeHandle); // set up the scope to the right ch
-						
-						if(status == VI_SUCCESS)
+						if(argv[a]=="-max")
 						{
-							voltage_set(scopeHandle,1);
-							get_curve(scopeHandle,databuffer,2500);
-							float bits = volt*10/256; // calculate the volt per bit of the scale
-						
-							for(int i = 0; i<2500; i++) // obtain the datapoint and convert to floating point
-							{
-								y[i] = databuffer[i];
-								data[i] = y[i]*bits;					
-							}
-							//printf("data complete");fflush(stdout);
-							float smooth[2500];
-							smooth_curve(data,2500,5,smooth); // smooth out the curve
-
-							for(i=0;i<point;i++)
-							{
-								amp(smooth,amplitude);
-								amplitude_array[i] = amplitude;
-							}
-
+							sscanf(argv[a+1],"%d",&fmax);
+							printf("%d\n",fmax);
 						}
 						else
 						{
-							printf("\nScope set up incorrect");
-							error = 4 ;
-							Error_Handling(error);
+							fmax = 15000;	printf("defult max");						
 						}
 					}
-					else
+					for(a=0;a<8;a++)
 					{
-						printf("\nFG set up incorrect");
-						error = 3;
-						Error_Handling(error);
+						if(argv[a]=="-min")
+						{
+							sscanf(argv[a+1],"%d",&f);
+							printf("%d\n",fmin);
+						}
+						else
+						{							
+							f = 5000;printf("defult min");
+						}
 					}
-				}
-			}
-			else
-			{
-				printf("\nFG not open");
-				error = 2;
-				Error_Handling(error);
-			}
-		}
-		else
-		{
-			printf("\nScope not open");
-			error = 1;
-			Error_Handling(error);
-		}
-	}	
-	else
-	{
-		printf("\nFailed to open defaultRM");
-		error = 0;
-		Error_Handling(error);
-	}	
-	return ;
-}*/
+					for(a=0;a<8;a++)
+					{
+						if(argv[a]=="-step")
+						{
+							sscanf(argv[a+1],"%d",&step);
+							printf("%d\n",step);
+						}
+						else
+						{
+							step = 1000;printf("defult step");
+						}
+					}
+					for(a=0;a<8;a++)
+					{
+						if(argv[a]=="-name")
+						{
+							sscanf(argv[a+1],"%s",&filename);
+							input_file = fopen(filename,"w");// write the value in text file
+							printf("input valid");
+						}
+						else
+						{
+							input_file = fopen("filename","w");printf("defult name");
+						}
 
-int data_aquire(float f, float fmax, int step, float amplitude)
-{
-	ViStatus status = VI_SUCCESS;
-	ViChar description_SCOPE[VI_FIND_BUFLEN];
-	ViChar description_FG[VI_FIND_BUFLEN];
-	ViSession defaultRM, scopeHandle, FGHandle;
-	
-	char databuffer[2500];
-
-	int y[2500];
-	int i;
-	int error;
-	int point = (fmax-f)/step;
-
-	float data[2500];
-	float volt;
-	float amplitude_array[step];
-
-	for(i=f;i<fmax;i+step)
-	{
-		fg_set(FGHandle,i,1,0,0);
-
-		if(status == VI_SUCCESS)
-		{
-			scope_set(1,scopeHandle); // set up the scope to the right ch
+					}		
 					
-			if(status == VI_SUCCESS)
-			{
-				voltage_set(scopeHandle,1);
-				get_curve(scopeHandle,databuffer,2500);
-				float bits = volt*10/256; // calculate the volt per bit of the scale
-						
-				for(int i = 0; i<2500; i++) // obtain the datapoint and convert to floating point
-				{
-					y[i] = databuffer[i];
-					data[i] = y[i]*bits;					
+					
 				}
-				//printf("data complete");fflush(stdout);
-				float smooth[2500];
-				smooth_curve(data,2500,5,smooth); // smooth out the curve
-				for(i=0;i<point;i++)
+				else
 				{
-					amp(smooth,amplitude);
-					amplitude_array[i] = amplitude;
-				}
-
-			}
-			else
-			{
-				printf("\nScope set up incorrect");
-				error = 4 ;
-				Error_Handling(error);
-			}
-		}
-		else
-		{
-			printf("\nFG set up incorrect");
-			error = 3;
-			Error_Handling(error);
-		}
-	}
+					fmax = 15000;
+					f = 5000;
+					step = 1000;
+		
+					input_file = fopen("filename","w");// write the value in text file
+					printf("no input");
+				}*/
 }
 
 
