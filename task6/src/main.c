@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>	
 #include <visa.h>
+#include <string.h>
 #include "curve.h"
 #include "LCR_Meter.h"
 
@@ -43,7 +44,6 @@ void main(int argc, char** argv )
 
 			if(status == VI_SUCCESS)
 			{
-				
 				if(argc > 1)
 				{
 					sscanf(argv[1],"%d",&fmax);
@@ -71,31 +71,64 @@ void main(int argc, char** argv )
 				{
 					fg_set(&FGHandle,i,1,0,0);//printf("\nFG is initialize\n");fflush(stdout);
 					printf("\nfrequency = %d \n",i);
-					amplitude = data_aquire(&scopeHandle,1);
+					
+					scope_set(1,&scopeHandle); // set up the scope to the right ch
+					//printf("\nscope is initialize\n");fflush(stdout);
+
+					scale = voltage_read(&scopeHandle);
+					float bits = scale*10.0/256.0; // calculate the volt per bit of the scale
+					//printf("volt / bits = %f \n",bits);fflush(stdout);
+					//printf("scale = %f \n",scale);fflush(stdout);
+
+					get_curve(&scopeHandle,databuffer,2500);
+					//printf("\ncurve copy\n");fflush(stdout);
+		
+					for(int a = 0; a<2500; a++) // obtain the datapoint and convert to floating point
+					{
+						y[a] = databuffer[a];
+						data[a] = y[a]*bits;
+						//printf("%f\n",data[a]);fflush(stdout);
+					}
+					//printf("data complete \n");fflush(stdout);
+				
+					float smooth[2500];
+					smooth_curve(data,2500,5,smooth); // smooth out the curve
+					//printf("\ncurve smooth\n");fflush(stdout);
+					
+					float amplitude = amp_stat(smooth,2496);
+					
+					
 					amplitude_array[n] = amplitude;
-					fprintf(input_file,"%d %f \n",i,amplitude_array[n]);
+					//printf("%f\n",amplitude_array[n] );fflush(stdout);
+
+					fprintf(input_file,"%d\n",i);
+					fprintf(input_file,"%f\n",amplitude_array[n]);
 					n=n+1;
 				}
+				fclose(input_file);
+				viClose(scopeHandle);
+				viClose(FGHandle);
+
 			}
 			else
 			{
 				printf("\nFG not open");
 				error = 2;
-				Error_Handling(error);
+				Error_Handling(error,&FGHandle,&scopeHandle);
 			}
 		}
 		else
 		{
 			printf("\nScope not open");
 			error = 1;
-			Error_Handling(error);
+			Error_Handling(error,&FGHandle,&scopeHandle);
 		}
 	}	
 	else
 	{
 		printf("\nFailed to open defaultRM");
 		error = 0;
-		Error_Handling(error);
+		Error_Handling(error,&FGHandle,&scopeHandle);
 	}	
 	return ;
 }

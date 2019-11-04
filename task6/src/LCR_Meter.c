@@ -6,21 +6,22 @@
 #include <string.h>
 #include "LCR_Meter.h"
 
-int get_curve(ViSession Handle,char* databuffer,int npoint)
+int get_curve(ViSession* Handle,char* databuffer,int npoint)
 {
 	ViUInt32 resultCount;
 	ViStatus status;
 	unsigned char resultbuffer[256];
-	viWrite(Handle,"CURV?\n",6,&resultCount);   
+	viWrite(*Handle,"CURV?\n",6,&resultCount);   
 	sleep(2);   
-	viRead(Handle,databuffer,npoint,&resultCount);
+	viRead(*Handle,databuffer,npoint,&resultCount);
 	return status;
 }
 
-int voltage_read (ViSession* Handle,float* volt)
+float voltage_read (ViSession* Handle)
 {
 	ViUInt32 Voltage;ViStatus status;
 	ViChar voltage[34];
+	float volt;
 
 	viWrite(*Handle,"AUTOSet EXECute\n",16,&Voltage);
 	sleep(5);
@@ -31,7 +32,7 @@ int voltage_read (ViSession* Handle,float* volt)
 		sscanf(voltage,"%f",&volt);
 		//printf("voltage float = %f\n",*volt);
 	
-	return status;
+	return volt;
 }
 int voltage_set (ViSession* Handle,float volts)
 {
@@ -114,154 +115,154 @@ int scope_set(int chanel,ViSession* Handle)
 	return status;
 }
 
-int Error_Handling(int error)
+int Error_Handling(int error,ViSession* FGHandle,ViSession* ScopeHandle)
 {
-		if (error == 0)
+	if (error == 0)
 	{
 		exit(EXIT_FAILURE);
 	}
-		if (error == 1)
+	if (error == 1)
 	{
+		viClose(*ScopeHandle);
 		exit(EXIT_FAILURE);
 	}
-		if (error == 2)
+	if (error == 2)
 	{
+		viClose(*ScopeHandle);
+		viClose(*FGHandle);
 		exit(EXIT_FAILURE);
 	}
-		if (error == 3)
+	if (error == 3)
 	{
+		viClose(*ScopeHandle);
+		viClose(*FGHandle);
 		exit(EXIT_FAILURE);
 	}
-		if (error == 4)
+	if (error == 4)
 	{
+		viClose(*ScopeHandle);
+		viClose(*FGHandle);
 		exit(EXIT_FAILURE);
 	}
 }
 
-float data_aquire(ViSession* scopeHandle,int scopech)
-{
-	ViStatus status = VI_SUCCESS;
-	ViChar description_SCOPE[VI_FIND_BUFLEN];
-	ViChar description_FG[VI_FIND_BUFLEN];
-	ViSession defaultRM;
-
-	
-	char databuffer[2500];
-
-	int y[2500];
-	int i=0;
-	int error;
-	int fmax;
-	int f ;
-	int step;
-	int n = 0 ,a=0;
-
-	float data[2500];
-	float scale;
-
-	//fg_set(FGHandle,i,1,0,0);//printf("\nFG is initialize\n");fflush(stdout);
-
-	//printf("\nfrequency = %d \n",i);
-		scope_set(scopech,*scopeHandle); // set up the scope to the right ch
-		//printf("\nscope is initialize\n");fflush(stdout);
-		
-		voltage_read(*scopeHandle,&scale);
-		float bits = scale*10.0/256.0; // calculate the volt per bit of the scale
-		//printf("volt / bits = %f \n",bits);fflush(stdout);
-		//printf("scale = %f \n",scale);fflush(stdout);
-							
-			get_curve(*scopeHandle,databuffer,2500);
-			//printf("\ncurve copy\n");fflush(stdout);
-							
-			for(int a = 0; a<2500; a++) // obtain the datapoint and convert to floating point
-			{
-				y[a] = databuffer[a];
-				data[a] = y[a]*bits;
-				//printf("%f\n",data[a]);fflush(stdout);
-			}
-			//printf("data complete \n");fflush(stdout);
-				
-				float smooth[2500];
-				smooth_curve(data,2500,5,smooth); // smooth out the curve
-				//printf("\ncurve smooth\n");fflush(stdout);
-					
-					float amplitude = amp_stat(smooth,2496);
-					//printf("%f\n",amplitude_array[n] );fflush(stdout);
-					//fprintf(input_file,"%d %f \n",i,amplitude_array[n]);
-					//n=n+1;
-
-						
-return amplitude;
-
-}
 
 void unserinput()
-{
-	/*
+{/*
+	
 	if(argc > 1)
-				{
-					for(a=0;a<8;a++)
-					{
-						if(argv[a]=="-max")
-						{
-							sscanf(argv[a+1],"%d",&fmax);
-							printf("%d\n",fmax);
-						}
-						else
-						{
-							fmax = 15000;	printf("defult max");						
-						}
-					}
-					for(a=0;a<8;a++)
-					{
-						if(argv[a]=="-min")
-						{
-							sscanf(argv[a+1],"%d",&f);
-							printf("%d\n",fmin);
-						}
-						else
-						{							
-							f = 5000;printf("defult min");
-						}
-					}
-					for(a=0;a<8;a++)
-					{
-						if(argv[a]=="-step")
-						{
-							sscanf(argv[a+1],"%d",&step);
-							printf("%d\n",step);
-						}
-						else
-						{
-							step = 1000;printf("defult step");
-						}
-					}
-					for(a=0;a<8;a++)
-					{
-						if(argv[a]=="-name")
-						{
-							sscanf(argv[a+1],"%s",&filename);
-							input_file = fopen(filename,"w");// write the value in text file
-							printf("input valid");
-						}
-						else
-						{
-							input_file = fopen("filename","w");printf("defult name");
-						}
-
-					}		
-					
-					
-				}
-				else
-				{
+	{
+		int a;
+		for(a=0;a<8;a++)
+		{
+			if(argv[a]=="max")
+			{
+				sscanf(argv[a+1],"%d",&fmax);
+				printf("%d\n",fmax);
+			}
+			else
+			{
+				fmax = 15000;	printf("defult max");						
+			}
+		}
+		for(a=0;a<8;a++)
+		{
+			if(argv[a]=="-min")
+			{
+				sscanf(argv[a+1],"%d",&f);
+				printf("%d\n",fmin);
+			}
+			else
+			{							
+				f = 5000;printf("defult min");
+			}
+		}
+		for(a=0;a<8;a++)
+		{
+			if(argv[a]=="-step")
+			{
+				sscanf(argv[a+1],"%d",&step);
+				printf("%d\n",step);
+			}
+			else
+			{
+				step = 1000;printf("defult step");
+			}
+		}
+		for(a=0;a<8;a++)
+		{
+			if(argv[a]=="-name")
+			{
+				sscanf(argv[a+1],"%s",&filename);
+				input_file = fopen(filename,"w");// write the value in text file
+				printf("input valid");
+			}
+			else
+			{
+				input_file = fopen("filename","w");printf("defult name");
+			}
+		}				
+	}
+	else
+	{
+		fmax = 15000;
+		f = 5000;
+		step = 1000;
+		input_file = fopen("filename","w");// write the value in text file
+		printf("no input");
+	}
+	if(argc > 1)
+	{
+		int a,m,x,ch,l;
+		char max[] = "-max";
+	
+		for(a=0;a<argc;a++)
+		{
+			switch( (int)argv[a][0] )            /* Check for option character. */
+      	/*	{
+      		 case '-':
+       			x = 0;                   /* Bail out if 1. */
+              /*  l = strlen( argv[a] );
+                 for( m = 1; m < l; ++m ) /* Scan through options. */
+               /*  {
+                   ch = (int)argv[n][m];
+                   switch( ch )
+                   {
+                   	case '-max': 												/* Legal options. */
+					/*sscanf(argv[a+1],"%d",&fmax);printf("f max = %d\n",fmax);
+					break;
+					case '-min':
+					sscanf(argv[a+1],"%d",&f);printf("f min = %d\n",f);
+					break;
+					case '-step':
+					sscanf(argv[a+1],"%d",&step);	printf("step = %d\n",step);
+					break;
+					case '-name':
+					sscanf(argv[a+1],"%s",&filename);
+					input_file = fopen(filename,"w");// write the value in text file
+					printf("input vaid");
+					break;
+					defult:
 					fmax = 15000;
 					f = 5000;
 					step = 1000;
-		
 					input_file = fopen("filename","w");// write the value in text file
 					printf("no input");
-				}*/
+					break;
+                   }
+               }
+           }
+		}				
+	}
+	else
+	{
+		fmax = 15000;
+		f = 5000;
+		step = 1000;
+		input_file = fopen("filename","w");// write the value in text file
+		printf("no input");
+	}
+	*/
 }
 
 

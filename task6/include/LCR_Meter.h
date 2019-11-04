@@ -3,9 +3,9 @@
 
 #include <stdio.h>
 
-int get_curve(ViSession Handle,char* databuffer,int npoint);
+int get_curve(ViSession* Handle,char* databuffer,int npoint);
 
-int voltage_read (ViSession* Handle,float* volt);
+float voltage_read (ViSession* Handle);
 
 int voltage_set (ViSession* Handle,float volts);
 
@@ -17,9 +17,9 @@ int fg_set(ViSession* Handle,int frequency,int vol,int dc, int phase);
 
 int scope_set(int chanel,ViSession* Handle);
 
-int Error_Handling(int error);
+int Error_Handling(int error,ViSession* FGHandle,ViSession* ScopeHandle);
 
-float data_aquire(ViSession* scopeHandle,int scopech);
+
 
 void unserinput();
 
