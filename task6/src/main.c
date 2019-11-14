@@ -101,10 +101,12 @@ void main(int argc, char** argv )
 					amplitude_array[n] = amplitude;
 					//printf("%f\n",amplitude_array[n] );fflush(stdout);
 
-					fprintf(input_file,"%d\n",i);
+					//fprintf(input_file,"%d\n",i);
 					fprintf(input_file,"%f\n",amplitude_array[n]);
 					n=n+1;
 				}
+				float resonance = amp_stat(amplitude_array,point);
+				printf("\nresonance = %f\n",resonance);fflush(stdout);
 				fclose(input_file);
 				viClose(scopeHandle);
 				viClose(FGHandle);
