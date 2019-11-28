@@ -11,7 +11,7 @@ void setup()
 	SPCR &=~(1<<CPHA);
 	
 	
-	DDRB |= (1<<PB3)|(1<<PB5)|(1<<PB6); // SET PORT D 1 to 3 AS OUTPUT PIN
+	DDRB |= (1<<PB3)|(1<<PB5)|(1<<PB6)|(1<<PB2); // SET PORT D 1 to 3 AS OUTPUT PIN
 
 	
 }
@@ -33,7 +33,7 @@ int main(void)
 	
 			datarecieved = SPDR;
 			PORTB |= (1<<PB6); //set chip select high
-			_delay_ms(10);
+			_delay_ms(1000);
 		}
 	}
 
